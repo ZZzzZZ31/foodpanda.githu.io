@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>طلباتك السريعة</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background-color: #f7f7f7; }
+    header { background-color: #ff4d4d; color: white; padding: 20px; text-align: center; position: relative; }
+    header img { height: 60px; margin-bottom: 10px; }
+    .lang-switcher { position: absolute; top: 10px; left: 20px; }
+    .lang-switcher select { padding: 5px; font-size: 14px; }
+    nav { background-color: #fff; display: flex; justify-content: space-around; border-bottom: 1px solid #ccc; }
+    nav button { flex: 1; background: none; border: none; padding: 15px; font-weight: bold; font-size: 16px; cursor: pointer; color: #333; }
+    nav button.active { background-color: #ffe6e6; color: #d40000; }
+    section { display: none; padding: 20px; }
+    section.active { display: block; }
+    .menu-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .button { display: inline-block; background-color: #ff4d4d; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; margin-top: 10px; cursor: pointer; }
+    footer { background-color: #333; color: white; text-align: center; padding: 15px; margin-top: 20px; }
+    input, textarea { width: 90%; padding: 10px; margin-top: 10px; }
+    #topBtn {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  z-index: 99;
+  font-size: 18px;
+  border: none;
+  outline: none;
+  background-color: #ff4d4d;
+  color: white;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 10px;
+  display: none;
+}
+#topBtn:hover {
+  background-color: #d40000;
+}
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="lang-switcher">
+    <select id="languageSelect" onchange="changeLanguage()">
+      <option value="ar">العربية</option>
+      <option value="zh">中文</option>
+      <option value="en">English</option>
+      <option value="ms">Melayu</option>
+    </select>
+  </div>
+  <img src="logo.jpeg" alt="Logo">
+  <h1 id="mainTitle">طلباتك السريعة</h1>
+  <p id="subtitle">منصة إلكترونية لتوصيل الطعام بسرعة وسهولة</p>
+</header>
+
+<nav>
+  <button onclick="showPage('home')" class="active" id="homeBtn">الرئيسية</button>
+  <button onclick="showPage('menu')" id="menuBtn">القائمة</button>
+  <button onclick="showPage('track')" id="trackBtn">تتبع الطلب</button>
+  <button onclick="showPage('contact')" id="contactBtn">اتصل بنا</button>
+</nav>
+
+<section id="home" class="active">
+  <h2 id="homeTitle">جوعان؟ نحن هنا من أجلك!</h2>
+  <p id="homeDesc">نقدم لك أشهى الوجبات من أفضل المطاعم، مع توصيل سريع حتى باب منزلك.</p>
+  <a href="#" class="button" onclick="showPage('menu')" id="orderNow">ابدأ الطلب</a>
+</section>
+
+<section id="menu">
+  <h2 id="menuTitle">قائمة الطعام</h2>
+  <div id="menuContent"></div>
+
+  <div style="background:#fff; padding:20px; margin-top:20px; border-radius:8px; box-shadow:0 0 5px rgba(0,0,0,0.1);">
+    <h3 id="cartTitle">سلة المشتريات</h3>
+    <ul id="cart-items" style="list-style:none; padding:0;"></ul>
+    <p><span id="totalText">الإجمالي:</span> <span id="cart-total">0</span> RM</p>
+    <button class="button" onclick="checkout()" id="checkoutBtn">شراء</button>
+  </div>
+</section>
+
+<section id="track">
+  <h2 id="trackTitle">تتبع طلبك</h2>
+  <p id="trackDesc">أدخل رقم الطلب:</p>
+  <input type="text" placeholder="مثال: 123456">
+  <a href="#" class="button">عرض الحالة</a>
+</section>
+
+<section id="contact">
+  <h2 id="contactTitle">اتصل بنا</h2>
+  <p>📞 012-3456789</p>
+  <p>✉️ support@talabat.com</p>
+  <p>📍 IIUM Pagoh، Muar، Johor</p>
+</section>
+
+<footer>
+  <p>©️ 2025 طلباتك السريعة</p>
+</footer>
+
+<script>
+let cart = [];
+let total = 0;
+
+const menuItems = [
+  { img: "shawarma.jpeg", names: { ar: "شاورما لحم", zh: "牛肉沙威玛", en: "Beef Shawarma", ms: "Shawarma Daging" }, price: 10 },
+  { img: "pizza.jpeg", names: { ar: "بيتزا دجاج", zh: "鸡肉披萨", en: "Chicken Pizza", ms: "Piza Ayam" }, price: 18 },
+  { img: "burger.jpeg", names: { ar: "برجر لحم", zh: "牛肉汉堡", en: "Beef Burger", ms: "Burger Daging" }, price: 15 },
+  { img: "mangojuice.jpeg", names: { ar: "عصير مانجو", zh: "芒果汁", en: "Mango Juice", ms: "Jus Mangga" }, price: 6 },
+  { img: "icedtea.jpeg", names: { ar: "شاي مثلج", zh: "冰茶", en: "Iced Tea", ms: "Teh Ais" }, price: 4 },
+  { img: "chocolatecake.jpeg", names: { ar: "كعكة شوكولاتة", zh: "巧克力蛋糕", en: "Chocolate Cake", ms: "Kek Coklat" }, price: 9 },
+  { img: "icecream.jpeg", names: { ar: "آيس كريم", zh: "冰淇淋", en: "Ice Cream", ms: "Aiskrim" }, price: 7 }
+];
+
+const langData = {
+  ar: {
+    mainTitle: "طلباتك السريعة", subtitle: "منصة إلكترونية لتوصيل الطعام بسرعة وسهولة",
+    homeTitle: "جوعان؟ نحن هنا من أجلك!", homeDesc: "نقدم لك أشهى الوجبات من أفضل المطاعم، مع توصيل سريع حتى باب منزلك.",
+    orderNow: "ابدأ الطلب", menuTitle: "قائمة الطعام", cartTitle: "سلة المشتريات", totalText: "الإجمالي:",
+    checkoutBtn: "شراء", trackTitle: "تتبع طلبك", trackDesc: "أدخل رقم الطلب:", contactTitle: "اتصل بنا",
+    homeBtn: "الرئيسية", menuBtn: "القائمة", trackBtn: "تتبع الطلب", contactBtn: "اتصل بنا"
+  },
+  zh: {
+    mainTitle: "快捷点餐平台", subtitle: "一个快速便捷的网上点餐平台",
+    homeTitle: "饿了吗？我们随时为你服务！", homeDesc: "精选本地美食，极速送达，马上下单享受美味！",
+    orderNow: "开始点餐", menuTitle: "菜单", cartTitle: "购物车", totalText: "总金额:",
+    checkoutBtn: "结算", trackTitle: "订单追踪", trackDesc: "请输入订单编号：", contactTitle: "联系我们",
+    homeBtn: "主页", menuBtn: "菜单", trackBtn: "订单追踪", contactBtn: "联系我们"
+  },
+  en: {
+    mainTitle: "Fast Order", subtitle: "An online platform for fast and easy food delivery",
+    homeTitle: "Hungry? We've got you covered!", homeDesc: "Delicious meals from top local restaurants, delivered fast to your doorstep.",
+    orderNow: "Start Order", menuTitle: "Menu", cartTitle: "Shopping Cart", totalText: "Total:",
+    checkoutBtn: "Checkout", trackTitle: "Track Your Order", trackDesc: "Enter your order number:", contactTitle: "Contact Us",
+    homeBtn: "Home", menuBtn: "Menu", trackBtn: "Track", contactBtn: "Contact"
+  },
+  ms: {
+    mainTitle: "Pesanan Pantas", subtitle: "Platform dalam talian untuk penghantaran makanan yang cepat dan mudah",
+    homeTitle: "Lapar? Kami sedia membantu anda!", homeDesc: "Hidangan lazat dari restoran tempatan terbaik, dihantar pantas ke pintu anda.",
+    orderNow: "Mula Tempah", menuTitle: "Menu", cartTitle: "Troli", totalText: "Jumlah:",
+    checkoutBtn: "Bayar", trackTitle: "Jejak Pesanan Anda", trackDesc: "Masukkan nombor pesanan anda:", contactTitle: "Hubungi Kami",
+    homeBtn: "Utama", menuBtn: "Menu", trackBtn: "Jejak", contactBtn: "Hubungi"
+  }
+};
+
+function changeLanguage() {
+  const lang = document.getElementById('languageSelect').value;
+  for (const key in langData[lang]) {
+    if (document.getElementById(key)) {
+      document.getElementById(key).textContent = langData[lang][key];
+    }
+  }
+  renderMenu(lang);
+}
+
+function showPage(pageId) {
+  const sections = document.querySelectorAll("section");
+  const buttons = document.querySelectorAll("nav button");
+  sections.forEach(section => section.classList.remove("active"));
+  buttons.forEach(button => button.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+  event.target.classList.add("active");
+}
+
+function renderMenu(lang) {
+  const menuContent = document.getElementById('menuContent');
+  menuContent.innerHTML = "";
+  menuItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'menu-item';
+    div.innerHTML = `
+      <img src="${item.img}" alt="${item.names[lang]}" style="width:20%; border-radius:6px;">
+      <h4>${item.names[lang]}</h4>
+      <p>${item.price} RM</p>
+      <button class="button" onclick="addToCart('${item.names[lang]}', ${item.price})">Add/加入购物车</button>
+    `;
+    menuContent.appendChild(div);
+  });
+}
+
+function addToCart(item, price) {
+  cart.push({ item, price });
+  total += price;
+  updateCart();
+}
+
+function removeFromCart(index) {
+  total -= cart[index].price;
+  cart.splice(index, 1);
+  updateCart();
+}
+
+function updateCart() {
+  const cartList = document.getElementById("cart-items");
+  cartList.innerHTML = "";
+  cart.forEach((c, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `${c.item} - ${c.price} RM 
+    <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer;">❌</button>`;
+    cartList.appendChild(li);
+  });
+  document.getElementById("cart-total").textContent = total;
+}
+
+function checkout() {
+  if(cart.length === 0) {
+    alert("Troli kosong! / 购物车为空！");
+    return;
+  }
+  alert("Jumlah: " + total + " RM\nTerima kasih atas pesanan anda!");
+  cart = [];
+  total = 0;
+  updateCart();
+}
+
+changeLanguage();
+</script>
+
+</body>
+</html>
